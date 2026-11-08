@@ -96,6 +96,7 @@ were after. Per-task results: `eval/*/results/flash-reap288-*.json`.
 | 6 dirs, scale 1.0 | LCB 43 (−6), held-out 60 (−8) | too strong; fewer tokens but wrong answers |
 | rank 1 / rank 3 | held-out 62 / 63, tokens −8 % / −29 % | rank 3 already shortens, rank 6 at half scale is better |
 | supervised fine-tuning towards short answers (LoRA, 366 examples) | held-out 55 (−13) | the model learns to be short and confidently wrong |
+| fewer active experts for speed (`num_experts_per_tok` 10 → 8 / 6 / 4, no weight change) | single-stream decode 41.7 → 44.8 / 45.7 / 46.8 tok/s (+7 / +10 / +12 %) | experts are ≤ 20 % of per-token time on this hardware; not worth the quality risk, quality not measured (`tools/flash_bench_tps.py`) |
 
 ## Repository layout
 
@@ -104,6 +105,7 @@ tools/flash_find_direction.py    measure per-layer, per-stream revision directio
 tools/flash_check_direction.py   mechanical check: separation along the direction, base vs edited
 tools/flash_ablate.py            apply the edit to an oMLX model directory (writes a new model directory)
 tools/flash_ab_generate.py       in-process A/B generation + grading on held-out problems
+tools/flash_bench_tps.py         in-process single-stream decode throughput of a model view (same prompts for every variant)
 tools/d1_*.py                    shared helpers (revision regex, open-r1 loader, prompt)
 train/edits/flash_revision_raw/  measured directions (48 layers × 4 streams), PCA-6 file, measurement report
 train/edits/flash_revision/      lab notes (Polish, to be translated)
