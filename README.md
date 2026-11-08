@@ -65,6 +65,11 @@ limit 38 % less often, writes half as many tokens and runs 35 % faster. 13 tasks
 | GSM8K, fixed 300-problem subset of test, 2 048 tokens | 292 (97.3 %) | 293 (97.7 %) | +2 / −1 | 336 → 324 | 1 → 1 | 24 → 19 min |
 | MMLU, 570 questions (10 per subject), zero-shot, one letter | 500 (87.7 %) | 500 (87.7 %) | +4 / −4 | 1 → 1 | 0 → 0 | 4 → 4 min |
 
+The MTP (multi-token prediction) draft head is untouched by the edit in practice as well: on identical prompts through oMLX, single
+stream, the draft acceptance is 89.1 % (base) vs 90.6 % (r6s05), 3.3 vs 3.1 tokens per backbone pass, and both decode at 90–107 tok/s
+once warm (`tools/omlx_bench_tps.py`). The edited model's wall-time advantage comes from shorter answers only, not from any speed
+change per token.
+
 Nothing moves beyond one or two tasks. HumanEval and GSM8K are also a useful negative control for the mechanism: the base model never
 hits the token limit there (0 / 164 and 1 / 300), i.e. the revision spiral only appears on hard, long tasks, which is exactly where the
 edit helps on LiveCodeBench. Runners, data subsets (with fixed seeds) and per-task results are in `eval/humaneval`, `eval/gsm8k`, `eval/mmlu`.
@@ -106,6 +111,7 @@ tools/flash_check_direction.py   mechanical check: separation along the directio
 tools/flash_ablate.py            apply the edit to an oMLX model directory (writes a new model directory)
 tools/flash_ab_generate.py       in-process A/B generation + grading on held-out problems
 tools/flash_bench_tps.py         in-process single-stream decode throughput of a model view (same prompts for every variant)
+tools/omlx_bench_tps.py          the same through oMLX with MTP speculative decoding on; also collects the MTP acceptance oMLX logs
 tools/d1_*.py                    shared helpers (revision regex, open-r1 loader, prompt)
 train/edits/flash_revision_raw/  measured directions (48 layers × 4 streams), PCA-6 file, measurement report
 train/edits/flash_revision/      lab notes (Polish, to be translated)
