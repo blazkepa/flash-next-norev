@@ -81,8 +81,10 @@ hidden tests. "At limit" = answers that hit `max_tokens`; median tokens = median
 | `flash-oq4e-nothink-8192.json` | Flash-Next oQ4e WLSRefit MTP (base) | non-thinking | 8 192 | **49** | 22/23 · 20/31 · 7/46 | 38 | 3 863 | 123 min |
 | `flash-oq4e-norev-pca6-nothink-8192.json` | oQ4e, norev 6 dirs, scale 1.0 | non-thinking | 8 192 | **43** | 22/23 · 16/31 · 5/46 | 14 | 917 | 55 min |
 | `flash-oq4e-norev-r6s05-nothink-8192.json` | oQ4e, norev 6 dirs, scale 0.5 | non-thinking | 8 192 | **53** | 22/23 · 19/31 · 12/46 | 23 | 2 935 | 73 min |
+| `flash-reap288-nothink-8192.json` | `sh0wie/…-REAP-288-MLX-4bit` (288/512 experts, no MTP) | non-thinking | 8 192 | **45** | 23/23 · 17/31 · 5/46 | 46 | 6 610 | 84 min |
 
-Paired on tasks, r6s05 vs base: +8 / −4. The oQ5e rows are a different quantisation of the same model and are not the baseline of the
+Paired on tasks, r6s05 vs base: +8 / −4; REAP-288 vs base: +4 / −8 (and vs r6s05: +4 / −12). The REAP row is a third-party
+expert-pruned build measured for scale; it is not derived from our base. The oQ5e rows are a different quantisation of the same model and are not the baseline of the
 edit; they show that about a third of the tasks end at the token limit in both the non-thinking and the thinking mode. The edited
 models were built from the oQ4e base, so the oQ4e rows are the comparison that matters.
 

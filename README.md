@@ -69,6 +69,24 @@ Nothing moves beyond one or two tasks. HumanEval and GSM8K are also a useful neg
 hits the token limit there (0 / 164 and 1 / 300), i.e. the revision spiral only appears on hard, long tasks, which is exactly where the
 edit helps on LiveCodeBench. Runners, data subsets (with fixed seeds) and per-task results are in `eval/humaneval`, `eval/gsm8k`, `eval/mmlu`.
 
+**Reference point: an expert-pruned variant.** The other way to make this model cheaper is to drop experts. For scale we ran the same
+four benchmarks, same harness and settings, on `sh0wie/Qwen3.8-Flash-Next-REAP-288-MLX-4bit` (288 of 512 experts kept by REAP saliency,
+4-bit, ~68 GB resident vs ~100 GB, no MTP head):
+
+| benchmark (greedy, non-thinking) | base oQ4e | r6s05 (this work) | REAP-288 | REAP vs base, paired |
+|---|---|---|---|---|
+| LiveCodeBench 100, 8 192 tokens | 49 | **53** | 45 | +4 / −8 |
+| … hit token limit / median tokens | 38 / 3 863 | **23 / 2 935** | 46 / 6 610 | |
+| HumanEval 164 | 156 | **157** | 151 | +3 / −8 |
+| GSM8K 300 | 292 | **293** | 286 | +4 / −10 |
+| MMLU 570 | 500 | 500 | 293 | +15 / −222 |
+
+Pruning buys memory and nothing else here: it does not touch the revision spiral (the pruned model hits the token limit *more* often
+and writes 70 % more tokens than the base), costs 4–6 points on the coding sets, and halves MMLU (50 of its 570 answers ignored the
+"letter only" instruction and started reasoning; even counting only answered questions it is at 56 %, and the losses concentrate in
+college-level science). The two approaches are orthogonal and could be combined; we did not, because the memory saving is not what we
+were after. Per-task results: `eval/*/results/flash-reap288-*.json`.
+
 ### What did not work (kept on purpose)
 
 | attempt | result | why it is here |
