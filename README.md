@@ -190,7 +190,7 @@ Tested with mlx 0.32.4, mlx_vlm 0.7.11, numpy 2.5.4, oMLX 0.7.3, macOS 26.
 
 ## Limitations
 
-- One machine (Mac Studio, 128 GB), one quantisation, one subset of 100 tasks. Numbers are for *this* checkpoint; the directions were
+- One machine (MacBook Pro, M5 Max, 128 GB), one quantisation, one subset of 100 tasks. Numbers are for *this* checkpoint; the directions were
   measured on it and are not expected to transfer to other quantisations unchanged.
 - Non-thinking mode only so far. Thinking-mode runs (32 k budget, temperature 0.6) are planned.
 - General capability checked on subsets only (300 GSM8K problems, 570 MMLU questions, full HumanEval), greedy and non-thinking; no

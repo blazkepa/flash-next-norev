@@ -71,7 +71,7 @@ API errors (connection drops, HTTP 5xx — typically a server under memory press
 
 ## Results in this repository
 
-All runs: the fixed 100-task subset, 4 parallel streams against oMLX on one Mac Studio (128 GB), greedy decoding, pass@1 with full
+All runs: the fixed 100-task subset, 4 parallel streams against oMLX on one MacBook Pro (M5 Max, 128 GB), greedy decoding, pass@1 with full
 hidden tests. "At limit" = answers that hit `max_tokens`; median tokens = median completion length.
 
 | file in `results/` | model | mode | max tokens | pass@1 | easy / medium / hard | at limit | median tokens | wall time |
