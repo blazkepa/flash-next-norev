@@ -8,7 +8,7 @@
 ## The problem
 
 Qwen3.8-Flash-Next (125 B MoE, 6 B active) in non-thinking mode tends to solve a coding task, then write "Wait, let me reconsider…"
-and start over, sometimes several times, until it hits the token limit. On a 100-task LiveCodeBench subset, **39 of 100 answers hit the
+and start over, sometimes several times, until it hits the token limit. On a 100-task LiveCodeBench subset, **38 of 100 answers hit the
 8 192-token limit** on the base model, and most of those were tasks it had already solved correctly in the first attempt.
 
 ## The method
@@ -33,12 +33,19 @@ LiveCodeBench, fixed 100-task subset (23 easy / 31 medium / 46 hard, contests 20
 
 | model (all oQ4e WLSRefit MTP, same machine) | pass@1 | hard | hit token limit | median tokens | wall time (4 streams) |
 |---|---|---|---|---|---|
-| base | 49 / 100 | 7 / 46 | 39 | 3 863 | 123 min |
+| base | 49 / 100 | 7 / 46 | 38 | 3 863 | 123 min |
 | norev, 6 dirs, scale 1.0 (`pca6`) | 43 / 100 | | | | |
 | **norev, 6 dirs, scale 0.5 (`r6s05`)** | **53 / 100** | **12 / 46** | **23** | **2 935** | **73 min** |
 
 Paired on tasks: r6s05 gains 8, loses 4 (5 of the 8 gains are tasks the base truncated). Held-out set of 100 open-r1 problems
 (greedy, 3 500 tokens, in-process): base 68, r6s05 66, median answer length −32 %.
+
+![Answer length per task on LiveCodeBench, base vs r6s05](docs/lcb_answer_length.svg)
+
+What changed is how often the model argues with itself. On the 100 held-out problems, counting the phrases "Wait", "Actually", "Hmm",
+"Let me reconsider / re-check / re-think" per answer: 4.6 → 1.3 revision phrases per answer; answers with at least one revision
+65 → 39; with three or more 48 → 16; answers cut at the token limit 28 → 15. Not zero on purpose: at full scale the revisions vanish
+and the accuracy goes with them.
 
 Noise: on 100 tasks a ±5 difference is within run-to-run noise for sampled decoding and within perturbation noise even for greedy
 (the rank-1 variant moved −6 with no change in truncations). Treat the pass@1 delta as "not worse, probably slightly better" and the
