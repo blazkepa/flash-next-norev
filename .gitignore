@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+.venv/
+.DS_Store
+# model weights and views never go here (110 GB, separate license)
+train/models/
+*.safetensors
+# local data, logs, scratch
+data/
+logs/
+*.log
+# never commit anything that might carry a server key
+settings.json
+.env
