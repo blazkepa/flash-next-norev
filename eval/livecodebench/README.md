@@ -50,7 +50,7 @@ python3 -I eval/livecodebench/make_subset.py          # once; downloads test6.js
 LLM_BASE_URL=http://127.0.0.1:8000/v1 LLM_API_KEY=x \
 python3 -I eval/livecodebench/run_livecodebench.py --model <oMLX model id> --no-think --max-tokens 8192 --workers 4 --tag <tag>
 
-# sampled runs (Qwen's recommended settings for non-thinking mode), one file per sample
+# sampled runs (Qwen's non-thinking settings; add --presence-penalty 1.5 for the full recommendation), one file per sample
 python3 -I eval/livecodebench/run_livecodebench.py ... --temperature 0.7 --top-p 0.8 --top-k 20 --tag <tag>-s1
 
 # aggregate >= 3 samples per model and compare two models paired on tasks
@@ -74,30 +74,42 @@ API errors (connection drops, HTTP 5xx — typically a server under memory press
 All runs: the fixed 100-task subset, 4 parallel streams against oMLX on one MacBook Pro (M5 Max, 128 GB), greedy decoding, pass@1 with full
 hidden tests. "At limit" = answers that hit `max_tokens`; median tokens = median completion length.
 
-| file in `results/` | model | mode | max tokens | pass@1 | easy / medium / hard | at limit | median tokens | wall time |
+| file in `results/` | model | mode | max tokens | pass@1 | easy / medium / hard | at limit | median tokens | total tokens |
 |---|---|---|---|---|---|---|---|---|
-| `flash-next-oq5e-nothink-8192.json` | Flash-Next oQ5e MTP | non-thinking | 8 192 | **53** | 22/23 · 20/31 · 11/46 | 33 | 3 398 | 87 min |
-| `flash-next-oq5e-think-32k.json` | Flash-Next oQ5e MTP | thinking | 32 768 | **65** | 23/23 · 26/31 · 16/46 | 32 | 11 979 | 321 min |
-| `flash-oq4e-nothink-8192.json` | Flash-Next oQ4e WLSRefit MTP (base) | non-thinking | 8 192 | **49** | 22/23 · 20/31 · 7/46 | 38 | 3 863 | 123 min |
-| `flash-oq4e-norev-pca6-nothink-8192.json` | oQ4e, norev 6 dirs, scale 1.0 | non-thinking | 8 192 | **43** | 22/23 · 16/31 · 5/46 | 14 | 917 | 55 min |
-| `flash-oq4e-norev-r6s05-nothink-8192.json` | oQ4e, norev 6 dirs, scale 0.5 | non-thinking | 8 192 | **53** | 22/23 · 19/31 · 12/46 | 23 | 2 935 | 73 min |
-| `flash-reap288-nothink-8192.json` | `sh0wie/…-REAP-288-MLX-4bit` (288/512 experts, no MTP) | non-thinking | 8 192 | **45** | 23/23 · 17/31 · 5/46 | 46 | 6 610 | 84 min |
+| `flash-next-oq5e-nothink-8192.json` | Flash-Next oQ5e MTP | non-thinking | 8 192 | **53** | 22/23 · 20/31 · 11/46 | 33 | 3 398 |430 k |
+| `flash-next-oq5e-think-32k.json` | Flash-Next oQ5e MTP | thinking | 32 768 | **65** | 23/23 · 26/31 · 16/46 | 32 | 11 979 |1.58 M |
+| `flash-oq4e-nothink-8192.json` | Flash-Next oQ4e WLSRefit MTP (base) | non-thinking | 8 192 | **51** | 23/23 · 20/31 · 8/46 | 38 | 3 863 | 445 k |
+| `flash-oq4e-norev-pca6-nothink-8192.json` | oQ4e, norev 6 dirs, scale 1.0 | non-thinking | 8 192 | **43** | 22/23 · 16/31 · 5/46 | 14 | 917 |217 k |
+| `flash-oq4e-norev-r6s05-nothink-8192.json` | oQ4e, norev 6 dirs, scale 0.5 | non-thinking | 8 192 | **53** | 22/23 · 19/31 · 12/46 | 23 | 2 935 |373 k |
+| `flash-reap288-nothink-8192.json` | `sh0wie/…-REAP-288-MLX-4bit` (288/512 experts, no MTP) | non-thinking | 8 192 | **45** | 23/23 · 17/31 · 5/46 | 46 | 6 610 |490 k |
 
-Paired on tasks, r6s05 vs base: +8 / −4; REAP-288 vs base: +4 / −8 (and vs r6s05: +4 / −12). The REAP row is a third-party
+Paired on tasks, r6s05 vs base: +6 / −4; REAP-288 vs base: +3 / −9 (and vs r6s05: +4 / −12). The base file was first written with two
+requests rejected by the server (counted as failures, 49); they were regenerated with `--retry-from` on 2026-11-09. Wall times are not
+listed: the base and the edited models were served in different oMLX modes on this machine, see the top-level README. The REAP row is a third-party
 expert-pruned build measured for scale; it is not derived from our base. The oQ5e rows are a different quantisation of the same model and are not the baseline of the
 edit; they show that about a third of the tasks end at the token limit in both the non-thinking and the thinking mode. The edited
 models were built from the oQ4e base, so the oQ4e rows are the comparison that matters.
 
 Sampled runs (temperature 0.7, top_p 0.8, top_k 20, non-thinking, 8 192 tokens; three files per model, `-s1` … `-s3`):
 
-| files in `results/` | model | pass@1 per sample | mean ± sd | at limit (of 300) | median tokens | wall time / sample |
+| files in `results/` | model | pass@1 per sample | mean ± population sd | at limit (of 300) | median tokens | total tokens |
 |---|---|---|---|---|---|---|
-| `flash-oq4e-nothink-8192-t07-s{1,2,3}.json` | oQ4e base | 54, 46, 52 | 50.7 ± 3.4 | 110 | 4 265 | 119 min |
-| `flash-oq4e-norev-r6s05-nothink-8192-t07-s{1,2,3}.json` | oQ4e, norev r6s05 | 54, 51, 51 | 52.0 ± 1.4 | 68 | 2 256 | 78 min |
+| `flash-oq4e-nothink-8192-t07-s{1,2,3}.json` | oQ4e base | 54, 46, 52 | 50.7 ± 3.4 | 110 | 4 265 | 1.35 M |
+| `flash-oq4e-norev-r6s05-nothink-8192-t07-s{1,2,3}.json` | oQ4e, norev r6s05 | 54, 51, 51 | 52.0 ± 1.4 | 68 | 2 256 | 1.05 M |
 
 `summarize_samples.py flash-oq4e-norev-r6s05-nothink-8192-t07 flash-oq4e-nothink-8192-t07`: r6s05 better on 17 tasks, base on 16,
 tie on 67, sign test p = 1.0; passed in all three samples: 38 vs 40. The second r6s05 sample lost 13 tasks to API errors while the
 server was under memory pressure from unrelated load; they were regenerated with `--retry-from` and the file was rewritten.
+
+Thinking mode (temperature 0.6, top_p 0.95, top_k 20, 32 768 tokens, one sampled run per model; Qwen recommends temperature 1.0):
+
+| file in `results/` | model | pass@1 | easy / medium / hard | at limit | median tokens | total tokens |
+|---|---|---|---|---|---|---|
+| `flash-oq4e-think-32k-t06.json` | oQ4e base | **63** | 23/23 · 25/31 · 15/46 | 33 | 18 027 | 1.71 M |
+| `flash-oq4e-norev-r6s05-think-32k-t06.json` | oQ4e, norev r6s05 | **69** | 23/23 · 28/31 · 18/46 | 28 | 10 533 | 1.47 M |
+
+Paired: r6s05 +7 / −1 (sign test p = 0.07). The chart in the top-level README is drawn by
+`plot_answer_length.py results/flash-oq4e-nothink-8192.json results/flash-oq4e-norev-r6s05-nothink-8192.json <out.svg>`.
 
 ## Noise
 
@@ -106,5 +118,6 @@ moved the held-out score by −6 with greedy decoding; sampled decoding adds run
 
 - compare paired on tasks (which tasks flipped, and in which direction) and report the sign test, not only the totals;
 - for sampled runs use at least 3 samples per model and aggregate with `summarize_samples.py`;
-- treat a pass@1 delta of a few points as "not worse" and look at the secondary numbers (answers at the token limit, median tokens,
-  wall time), which are large and consistent across sets.
+- treat a pass@1 delta of a few points as "not worse" and look at the secondary numbers (answers at the token limit, median and
+  total tokens), which are large and consistent across sets. Do not compare wall times between models unless the server log shows
+  they were served in the same mode.

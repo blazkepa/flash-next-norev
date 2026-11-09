@@ -1,58 +1,61 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="760" height="340" viewBox="0 0 760 340" font-family="Helvetica, Arial, sans-serif" font-size="12">
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="340" viewBox="0 0 760 340" font-family="Helvetica, Arial, sans-serif" font-size="11">
 <rect width="760" height="340" fill="white"/>
 <text x="60" y="22" font-size="14" font-weight="bold">LiveCodeBench, 100 tasks, non-thinking, greedy: answer length per task</text>
-<line x1="60" y1="280.0" x2="740" y2="280.0" stroke="#ddd"/>
+<line x1="60" y1="280.0" x2="748" y2="280.0" stroke="#e5e5e5"/>
 <text x="52" y="284.0" text-anchor="end" fill="#555">0</text>
-<line x1="60" y1="220.0" x2="740" y2="220.0" stroke="#ddd"/>
+<line x1="60" y1="220.0" x2="748" y2="220.0" stroke="#e5e5e5"/>
 <text x="52" y="224.0" text-anchor="end" fill="#555">10</text>
-<line x1="60" y1="160.0" x2="740" y2="160.0" stroke="#ddd"/>
+<line x1="60" y1="160.0" x2="748" y2="160.0" stroke="#e5e5e5"/>
 <text x="52" y="164.0" text-anchor="end" fill="#555">20</text>
-<line x1="60" y1="100.0" x2="740" y2="100.0" stroke="#ddd"/>
+<line x1="60" y1="100.0" x2="748" y2="100.0" stroke="#e5e5e5"/>
 <text x="52" y="104.0" text-anchor="end" fill="#555">30</text>
-<line x1="60" y1="40.0" x2="740" y2="40.0" stroke="#ddd"/>
+<line x1="60" y1="40.0" x2="748" y2="40.0" stroke="#e5e5e5"/>
 <text x="52" y="44.0" text-anchor="end" fill="#555">40</text>
-<rect x="62.0" y="166.0" width="18.2" height="114.0" fill="#9e9e9e"/>
-<rect x="82.2" y="154.0" width="18.2" height="126.0" fill="#d9534f"/>
+<rect x="62.0" y="172.0" width="17.2" height="108.0" fill="#9e9e9e"/>
+<rect x="80.2" y="154.0" width="17.2" height="126.0" fill="#d9534f"/>
 <text x="60.0" y="296" fill="#555">0</text>
-<rect x="104.5" y="262.0" width="18.2" height="18.0" fill="#9e9e9e"/>
-<rect x="124.8" y="250.0" width="18.2" height="30.0" fill="#d9534f"/>
-<rect x="147.0" y="226.0" width="18.2" height="54.0" fill="#9e9e9e"/>
-<rect x="167.2" y="220.0" width="18.2" height="60.0" fill="#d9534f"/>
-<text x="145.0" y="296" fill="#555">1024</text>
-<rect x="189.5" y="238.0" width="18.2" height="42.0" fill="#9e9e9e"/>
-<rect x="209.8" y="238.0" width="18.2" height="42.0" fill="#d9534f"/>
-<rect x="232.0" y="262.0" width="18.2" height="18.0" fill="#9e9e9e"/>
-<rect x="252.2" y="256.0" width="18.2" height="24.0" fill="#d9534f"/>
-<text x="230.0" y="296" fill="#555">2048</text>
-<rect x="274.5" y="262.0" width="18.2" height="18.0" fill="#9e9e9e"/>
-<rect x="294.8" y="256.0" width="18.2" height="24.0" fill="#d9534f"/>
-<rect x="317.0" y="262.0" width="18.2" height="18.0" fill="#9e9e9e"/>
-<rect x="337.2" y="244.0" width="18.2" height="36.0" fill="#d9534f"/>
-<text x="315.0" y="296" fill="#555">3072</text>
-<rect x="359.5" y="256.0" width="18.2" height="24.0" fill="#9e9e9e"/>
-<rect x="379.8" y="268.0" width="18.2" height="12.0" fill="#d9534f"/>
-<rect x="402.0" y="262.0" width="18.2" height="18.0" fill="#9e9e9e"/>
-<rect x="422.2" y="256.0" width="18.2" height="24.0" fill="#d9534f"/>
-<text x="400.0" y="296" fill="#555">4096</text>
-<rect x="444.5" y="256.0" width="18.2" height="24.0" fill="#9e9e9e"/>
-<rect x="464.8" y="256.0" width="18.2" height="24.0" fill="#d9534f"/>
-<rect x="487.0" y="280.0" width="18.2" height="0.0" fill="#9e9e9e"/>
-<rect x="507.2" y="268.0" width="18.2" height="12.0" fill="#d9534f"/>
-<text x="485.0" y="296" fill="#555">5120</text>
-<rect x="529.5" y="280.0" width="18.2" height="0.0" fill="#9e9e9e"/>
-<rect x="549.8" y="274.0" width="18.2" height="6.0" fill="#d9534f"/>
-<rect x="572.0" y="274.0" width="18.2" height="6.0" fill="#9e9e9e"/>
-<rect x="592.2" y="274.0" width="18.2" height="6.0" fill="#d9534f"/>
-<text x="570.0" y="296" fill="#555">6144</text>
-<rect x="614.5" y="280.0" width="18.2" height="0.0" fill="#9e9e9e"/>
-<rect x="634.8" y="262.0" width="18.2" height="18.0" fill="#d9534f"/>
-<rect x="657.0" y="268.0" width="18.2" height="12.0" fill="#9e9e9e"/>
-<rect x="677.2" y="274.0" width="18.2" height="6.0" fill="#d9534f"/>
-<rect x="699.5" y="46.0" width="18.2" height="234.0" fill="#9e9e9e"/>
-<rect x="719.8" y="130.0" width="18.2" height="150.0" fill="#d9534f"/>
-<text x="740.0" y="296" text-anchor="end" fill="#555">8192 = limit</text>
-<text x="400.0" y="322" text-anchor="middle" fill="#333">completion tokens (bins of 512; the last bin is answers cut at the 8 192-token limit)</text>
+<rect x="102.5" y="262.0" width="17.2" height="18.0" fill="#9e9e9e"/>
+<rect x="120.7" y="250.0" width="17.2" height="30.0" fill="#d9534f"/>
+<rect x="143.0" y="226.0" width="17.2" height="54.0" fill="#9e9e9e"/>
+<rect x="161.2" y="220.0" width="17.2" height="60.0" fill="#d9534f"/>
+<text x="140.9" y="296" fill="#555">1024</text>
+<rect x="183.4" y="238.0" width="17.2" height="42.0" fill="#9e9e9e"/>
+<rect x="201.6" y="238.0" width="17.2" height="42.0" fill="#d9534f"/>
+<rect x="223.9" y="256.0" width="17.2" height="24.0" fill="#9e9e9e"/>
+<rect x="242.1" y="256.0" width="17.2" height="24.0" fill="#d9534f"/>
+<text x="221.9" y="296" fill="#555">2048</text>
+<rect x="264.4" y="262.0" width="17.2" height="18.0" fill="#9e9e9e"/>
+<rect x="282.6" y="256.0" width="17.2" height="24.0" fill="#d9534f"/>
+<rect x="304.8" y="262.0" width="17.2" height="18.0" fill="#9e9e9e"/>
+<rect x="323.1" y="244.0" width="17.2" height="36.0" fill="#d9534f"/>
+<text x="302.8" y="296" fill="#555">3072</text>
+<rect x="345.3" y="256.0" width="17.2" height="24.0" fill="#9e9e9e"/>
+<rect x="363.5" y="268.0" width="17.2" height="12.0" fill="#d9534f"/>
+<rect x="385.8" y="262.0" width="17.2" height="18.0" fill="#9e9e9e"/>
+<rect x="404.0" y="256.0" width="17.2" height="24.0" fill="#d9534f"/>
+<text x="383.8" y="296" fill="#555">4096</text>
+<rect x="426.3" y="256.0" width="17.2" height="24.0" fill="#9e9e9e"/>
+<rect x="444.5" y="256.0" width="17.2" height="24.0" fill="#d9534f"/>
+<rect x="466.7" y="280.0" width="17.2" height="0.0" fill="#9e9e9e"/>
+<rect x="484.9" y="268.0" width="17.2" height="12.0" fill="#d9534f"/>
+<text x="464.7" y="296" fill="#555">5120</text>
+<rect x="507.2" y="280.0" width="17.2" height="0.0" fill="#9e9e9e"/>
+<rect x="525.4" y="274.0" width="17.2" height="6.0" fill="#d9534f"/>
+<rect x="547.7" y="274.0" width="17.2" height="6.0" fill="#9e9e9e"/>
+<rect x="565.9" y="274.0" width="17.2" height="6.0" fill="#d9534f"/>
+<text x="545.6" y="296" fill="#555">6144</text>
+<rect x="588.1" y="280.0" width="17.2" height="0.0" fill="#9e9e9e"/>
+<rect x="606.4" y="262.0" width="17.2" height="18.0" fill="#d9534f"/>
+<rect x="628.6" y="268.0" width="17.2" height="12.0" fill="#9e9e9e"/>
+<rect x="646.8" y="274.0" width="17.2" height="6.0" fill="#d9534f"/>
+<text x="626.6" y="296" fill="#555">7168</text>
+<rect x="669.1" y="274.0" width="17.2" height="6.0" fill="#9e9e9e"/>
+<rect x="687.3" y="268.0" width="17.2" height="12.0" fill="#d9534f"/>
+<rect x="709.6" y="52.0" width="17.2" height="228.0" fill="#9e9e9e"/>
+<rect x="727.8" y="142.0" width="17.2" height="138.0" fill="#d9534f"/>
+<text x="727.8" y="296" text-anchor="middle" fill="#555">cut</text>
+<text x="404.0" y="322" text-anchor="middle" fill="#333">completion tokens (bins of 512); "cut" = answers that hit the 8 192-token limit</text>
 <text x="16" y="160.0" transform="rotate(-90 16 160.0)" text-anchor="middle" fill="#333">tasks</text>
-<rect x="72" y="50" width="14" height="14" fill="#9e9e9e"/><text x="92" y="62">base oQ4e: 38 of 100 cut at the limit, median 3863 tokens, pass@1 49</text>
-<rect x="72" y="72" width="14" height="14" fill="#d9534f"/><text x="92" y="84">norev r6s05: 23 of 100 cut at the limit, median 2934 tokens, pass@1 53</text>
+<rect x="72" y="50" width="14" height="14" fill="#9e9e9e"/><text x="92" y="62">base oQ4e: 38 of 100 cut at the limit, median 3863 tokens, pass@1 51</text>
+<rect x="72" y="70" width="14" height="14" fill="#d9534f"/><text x="92" y="82">norev r6s05: 23 of 100 cut at the limit, median 2935 tokens, pass@1 53</text>
 </svg>

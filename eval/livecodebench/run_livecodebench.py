@@ -125,7 +125,8 @@ def main():
     ap = argparse.ArgumentParser(); ap.add_argument('--model', required=True); ap.add_argument('--limit', type=int, default=0)
     ap.add_argument('--workers', type=int, default=4); ap.add_argument('--no-think', action='store_true'); ap.add_argument('--tag', default='')
     ap.add_argument('--max-tokens', type=int, default=2048); ap.add_argument('--http-timeout', type=float, default=600.0, help='timeout of a single HTTP request (s); thinking-mode models with a 32k budget need ~3600'); ap.add_argument('--timeout', type=float, default=10.0); ap.add_argument('--mem-mb', type=int, default=1024)
-    ap.add_argument('--temperature', type=float, default=0.0, help='0 = greedy (default, reproducible). Qwen recommends 0.7 in non-thinking mode / 0.6 in thinking mode')
+    ap.add_argument('--temperature', type=float, default=0.0, help='0 = greedy (default, reproducible). Qwen recommends 0.7 non-thinking / 1.0 thinking')
+    ap.add_argument('--presence-penalty', type=float, default=0.0, help='0 = not sent; Qwen recommends 1.5 in non-thinking mode')
     ap.add_argument('--top-p', type=float, default=1.0); ap.add_argument('--top-k', type=int, default=0, help='0 = disabled; Qwen recommends 20')
     ap.add_argument('--retries', type=int, default=3, help='how many times to retry a request after an API/HTTP error (a server under memory pressure drops connections)')
     ap.add_argument('--retry-from', default='', help='path to an existing results/*.json: re-run only the tasks that ended with an API error and overwrite that file')
@@ -139,7 +140,8 @@ def main():
     if a.temperature > 0:  # with greedy decoding top_p/top_k change nothing, so we do not send them
         extra['top_p'] = a.top_p
         if a.top_k > 0: extra['top_k'] = a.top_k
-    sampling = dict(temperature=a.temperature, top_p=a.top_p if a.temperature > 0 else None, top_k=a.top_k if a.temperature > 0 else None)
+    if a.presence_penalty: extra['presence_penalty'] = a.presence_penalty
+    sampling = dict(temperature=a.temperature, top_p=a.top_p if a.temperature > 0 else None, top_k=a.top_k if a.temperature > 0 else None, presence_penalty=a.presence_penalty or None)
     def run_one(p):
         base = dict(id=p['question_id'], platform=p['platform'], difficulty=p['difficulty'], contest_date=p['contest_date'][:10])
         for attempt in range(a.retries + 1):
