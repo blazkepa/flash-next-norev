@@ -3,6 +3,10 @@
 **Removing the "self-revision" subspace from Qwen3.8-Flash-Next without training: 40 % fewer answers cut at the token limit and a
 quarter shorter answers at unchanged accuracy (LiveCodeBench 51 → 53 without thinking, 63 → 69 with thinking, both within noise).**
 
+**Ready-to-run model (118 GB, oMLX on a 128 GB Mac):
+[huggingface.co/blazkepa/Qwen3.8-Flash-Next-norev-oQ4e-MTP](https://huggingface.co/blazkepa/Qwen3.8-Flash-Next-norev-oQ4e-MTP).**
+This repository has the code, the measured directions and every per-task result behind it.
+
 > Status: work in progress (November 2026). The greedy, the sampled (3 × 2 runs, plus 2 × 2 with Qwen's presence penalty) and the thinking-mode results below are measured.
 > Nothing here is a product; it is a documented experiment with its failures included.
 >
@@ -193,6 +197,9 @@ eval/mmlu/                       MMLU runner (zero-shot, letter answer), 570-que
 
 ## Reproducing the model
 
+To just use it, download the finished model from
+[Hugging Face](https://huggingface.co/blazkepa/Qwen3.8-Flash-Next-norev-oQ4e-MTP); this section is for rebuilding it yourself.
+
 Requirements: Apple Silicon with ≥ 128 GB unified memory, [oMLX](https://github.com/jundot/omlx) (everything here was run with the
 0.7.4.dev1 macOS app), `mlx`, `mlx_vlm`, `numpy`, and the base model `GBP-DE/Qwen3.8-Flash-Next-oQ4e-WLSRefit-MTP` **at revision
 `8a284d64`** (2026-11-01) in `~/.omlx/models/GBP-DE/`. GBP-DE has updated that repository in place since then; the current `main` is a
@@ -313,4 +320,5 @@ Tested with mlx 0.32.4, mlx_vlm 0.7.11, numpy 2.5.4, oMLX 0.7.4.dev1, macOS 26.
 
 ## Author
 
-[github.com/blazkepa](https://github.com/blazkepa) · [huggingface.co/blazkepa](https://huggingface.co/blazkepa)
+[github.com/blazkepa](https://github.com/blazkepa) · [huggingface.co/blazkepa](https://huggingface.co/blazkepa) · model:
+[blazkepa/Qwen3.8-Flash-Next-norev-oQ4e-MTP](https://huggingface.co/blazkepa/Qwen3.8-Flash-Next-norev-oQ4e-MTP)
