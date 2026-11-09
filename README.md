@@ -18,7 +18,9 @@ Qwen3.8-Flash-Next (125 B MoE, 6 B active) tends to solve a coding task, then wr
 sometimes several times, until it hits the token limit. It happens in both modes. On a 100-task LiveCodeBench subset, **38 of 100
 non-thinking answers hit the 8 192-token limit** on the base model, and 12 of those 38 tasks are solved by the edited model or by a
 sampled non-thinking run of the base itself (16 counting the base's thinking-mode run), i.e. the spiral blocks answers that are within
-reach. With thinking on and a 32 768-token limit, 33 of the base's 37 failures are again answers cut at the limit, not wrong answers.
+reach. With thinking on and a 32 768-token limit, 33 of the base's 37 failures are answers cut at the limit, not wrong answers; the
+thinking text was not kept, so there the loop is inferred from the counts (the edit cuts these 33 to 28 and the median answer from
+18 k to 10.5 k tokens), not read from the answers.
 
 ## The method
 
@@ -79,20 +81,27 @@ three samples: 38 (r6s05) vs 40 (base). With sampling the accuracy is the same w
 limit 38 % less often and its median answer is about half as long (22 % fewer tokens in total). 13 tasks of the second r6s05 sample failed with API errors
 (the server was under memory pressure from unrelated load) and were regenerated afterwards with the same settings (`--retry-from`).
 
-**With Qwen's full recommended settings**, i.e. the same plus `presence_penalty=1.5` (2 samples per model, `-pp15-s1` and `-pp15-s2`;
-oMLX applies the penalty over the last 20 tokens of each sequence):
+**With Qwen's recommended presence penalty**, i.e. the same plus `presence_penalty=1.5` (2 samples per model, `-pp15-s1` and
+`-pp15-s2`). Note that oMLX (via mlx-lm's `make_presence_penalty`, default `context_size=20`) applies it only to tokens seen in the
+last 20 positions, and the window cannot be changed per request; Qwen's recommendation assumes the OpenAI/vLLM definition, which
+counts every generated token. So this is a much weaker penalty than the one Qwen means:
 
 | model | pass@1, mean ± population sd | samples | hard (mean) | hit token limit (of 200) | median tokens | total tokens (2 samples) |
 |---|---|---|---|---|---|---|
 | base | 50.5 ± 1.5 | 49, 52 | 9.0 / 46 | 69 | 5 196 | 929 k |
 | **r6s05** | **55.5 ± 4.5** | 60, 51 | 14.5 / 46 | **43** | **2 940** | **730 k** |
 
-Paired on tasks: r6s05 better on 17, base better on 8, tie on 75 (sign test p = 0.11); passed in both samples: 46 vs 43. The first pair of samples looked like a real accuracy gap (+16 / −5 on tasks,
-p = 0.027), the second did not (+7 / −8), so I read the 60 as a lucky draw and the accuracy as unchanged. Two things the penalty did
-show: it does not cure the base's loops (35 % of its answers still hit the limit, vs 37 % without the penalty, same pass rate), and it
-makes the median answer of both models longer (base 4 265 → 5 196, r6s05 2 256 → 2 940 tokens). Before trusting the comparison I
-checked that the penalty takes effect in both oMLX serving paths (the base runs resident and single-stream, r6s05 batched with the
-n-gram table on SSD): greedy outputs of both models diverge at the same positions once the penalty is set, in both paths.
+Paired on tasks: r6s05 better on 17, base better on 8, tie on 75 (sign test p = 0.11); passed in both samples: 46 vs 43. The samples
+are independent, so pairing them is arbitrary; r6s05's first sample (60) is the outlier: against the two base samples it is +16 / −5
+(p = 0.027) and +14 / −6 on tasks, its second sample (51) is +7 / −5 and +7 / −8. I read the 60 as a lucky draw and the accuracy as
+unchanged. Two things the penalty did show: the 20-token penalty does not cure the base's loops (35 % of its answers still hit the
+limit, vs 37 % without the penalty, same pass rate), which is expected since a restart a few hundred tokens later is outside its
+window (I did not test a full-history penalty); and it makes the answers of both models somewhat longer (median base 4 265 → 5 196,
+r6s05 2 256 → 2 940 tokens; totals +3 % and +4 %) without changing the base-vs-edit comparison (−21 % tokens with it, −22 % without).
+Before trusting the comparison I checked that the penalty takes effect in both oMLX serving paths (the base runs resident and
+single-stream, r6s05 batched with the n-gram table on SSD): for each model, the greedy output with the penalty departs from the
+no-penalty output at the same place whether the request runs alone or alongside three others (3 of 4 test prompts; the fourth differs
+because greedy decoding here is not bit-exact between runs). The probe is `eval/livecodebench/presence_penalty_probe.py`.
 
 **Thinking mode** (temperature 0.6, top_p 0.95, top_k 20; Qwen recommends temperature 1.0 for thinking, these runs used 0.6;
 32 768 output tokens, same subset, one run per model):
@@ -287,7 +296,8 @@ Tested with mlx 0.32.4, mlx_vlm 0.7.11, numpy 2.5.4, oMLX 0.7.4.dev1, macOS 26.
 - One machine (MacBook Pro, M5 Max, 128 GB), one quantisation, one subset of 100 tasks. Numbers are for *this* checkpoint; the directions were
   measured on it and may or may not transfer to other quantisations of the same weights (untested).
 - Thinking mode: one sampled run per model (32 k budget, temperature 0.6 where Qwen recommends 1.0); no repeated samples yet.
-- Non-thinking: 3 sampled runs per model without and 2 with Qwen's recommended `presence_penalty=1.5`; the penalty did not change the picture.
+- Non-thinking: 3 sampled runs per model without and 2 with `presence_penalty=1.5` as oMLX implements it (last 20 tokens only); it did
+  not change the base-vs-edit comparison. A full-history penalty as in vLLM is untested.
 - No controlled wall-clock comparison (see "A note on wall time"); only token counts are comparable between base and edit.
 - General capability checked on subsets only (300 GSM8K problems, 570 MMLU questions, full HumanEval), greedy and non-thinking; no
   full MMLU, no multilingual or long-context tests.

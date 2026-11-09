@@ -109,9 +109,13 @@ Same settings plus Qwen's `presence_penalty=1.5` (`--presence-penalty 1.5`; two 
 | `flash-oq4e-norev-r6s05-nothink-8192-t07-pp15-s{1,2}.json` | oQ4e, norev r6s05 | 60, 51 | 55.5 ± 4.5 | 43 | 2 940 | 730 k |
 
 `summarize_samples.py flash-oq4e-norev-r6s05-nothink-8192-t07-pp15 flash-oq4e-nothink-8192-t07-pp15`: r6s05 better on 17 tasks,
-base on 8, tie on 75, sign test p = 0.11; passed in both samples: 46 vs 43. Per pair: s1 +16 / −5 (p = 0.027), s2 +7 / −8 (p = 1.0).
-No API errors in these four runs. The penalty did not reduce the base's truncations (35 % vs 37 % without it) and lengthened the
-median answer of both models.
+base on 8, tie on 75, sign test p = 0.11; passed in both samples: 46 vs 43. Sample against sample (they are independent, so this is
+only to show where the spread comes from): r6s05 s1 vs base s1 / s2 = +16 / −5 and +14 / −6, r6s05 s2 vs base s1 / s2 = +7 / −5 and
++7 / −8. No API errors in these four runs. oMLX applies the penalty over the last 20 tokens only (mlx-lm default), not over the whole
+generated text as in the OpenAI/vLLM definition Qwen's recommendation refers to. This 20-token penalty did not reduce the base's
+truncations (35 % vs 37 % without it) and lengthened the median answer of both models; a full-history penalty was not tested.
+`presence_penalty_probe.py` is the check that the penalty takes effect in both oMLX serving paths (greedy, 4 prompts, penalty 0 / 0 /
+1.5 / 100, one request at a time and four at once).
 
 Thinking mode (temperature 0.6, top_p 0.95, top_k 20, 32 768 tokens, one sampled run per model; Qwen recommends temperature 1.0):
 
