@@ -101,6 +101,18 @@ Sampled runs (temperature 0.7, top_p 0.8, top_k 20, non-thinking, 8 192 tokens; 
 tie on 67, sign test p = 1.0; passed in all three samples: 38 vs 40. The second r6s05 sample lost 13 tasks to API errors while the
 server was under memory pressure from unrelated load; they were regenerated with `--retry-from` and the file was rewritten.
 
+Same settings plus Qwen's `presence_penalty=1.5` (`--presence-penalty 1.5`; two files per model, `-pp15-s1`, `-pp15-s2`):
+
+| files in `results/` | model | pass@1 per sample | mean ± population sd | at limit (of 200) | median tokens | total tokens |
+|---|---|---|---|---|---|---|
+| `flash-oq4e-nothink-8192-t07-pp15-s{1,2}.json` | oQ4e base | 49, 52 | 50.5 ± 1.5 | 69 | 5 196 | 929 k |
+| `flash-oq4e-norev-r6s05-nothink-8192-t07-pp15-s{1,2}.json` | oQ4e, norev r6s05 | 60, 51 | 55.5 ± 4.5 | 43 | 2 940 | 730 k |
+
+`summarize_samples.py flash-oq4e-norev-r6s05-nothink-8192-t07-pp15 flash-oq4e-nothink-8192-t07-pp15`: r6s05 better on 17 tasks,
+base on 8, tie on 75, sign test p = 0.11; passed in both samples: 46 vs 43. Per pair: s1 +16 / −5 (p = 0.027), s2 +7 / −8 (p = 1.0).
+No API errors in these four runs. The penalty did not reduce the base's truncations (35 % vs 37 % without it) and lengthened the
+median answer of both models.
+
 Thinking mode (temperature 0.6, top_p 0.95, top_k 20, 32 768 tokens, one sampled run per model; Qwen recommends temperature 1.0):
 
 | file in `results/` | model | pass@1 | easy / medium / hard | at limit | median tokens | total tokens |

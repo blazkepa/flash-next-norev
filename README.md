@@ -3,7 +3,7 @@
 **Removing the "self-revision" subspace from Qwen3.8-Flash-Next without training: 40 % fewer answers cut at the token limit and a
 quarter shorter answers at unchanged accuracy (LiveCodeBench 51 → 53 without thinking, 63 → 69 with thinking, both within noise).**
 
-> Status: work in progress (November 2026). The greedy, the sampled (3 × 2 runs) and the thinking-mode results below are measured.
+> Status: work in progress (November 2026). The greedy, the sampled (3 × 2 runs, plus 2 × 2 with Qwen's presence penalty) and the thinking-mode results below are measured.
 > Nothing here is a product; it is a documented experiment with its failures included.
 >
 > Corrections, 2026-11-09. (1) Earlier versions claimed "−40 % wall time". The timings were real but did not isolate the edit, see
@@ -67,8 +67,7 @@ Noise: on 100 tasks a ±5 difference is within run-to-run noise for sampled deco
 token delta (which is large and consistent on both sets) as the real effect.
 
 **Sampled decoding** (temperature 0.7, top_p 0.8, top_k 20; 3 samples per model, same subset, 8 192 tokens; aggregated with
-`summarize_samples.py`). These are Qwen's recommended non-thinking settings without the presence penalty: Qwen also recommends
-`presence_penalty=1.5`, which targets repetition and which these runs did not use.
+`summarize_samples.py`). These are Qwen's recommended non-thinking settings without the presence penalty; the runs with it follow below.
 
 | model | pass@1, mean ± population sd | samples | hard (mean) | hit token limit (of 300) | median tokens | total tokens (3 samples) |
 |---|---|---|---|---|---|---|
@@ -79,6 +78,21 @@ Paired on tasks (per-task pass fractions): r6s05 better on 17, base better on 16
 three samples: 38 (r6s05) vs 40 (base). With sampling the accuracy is the same within noise, while the edited model hits the token
 limit 38 % less often and its median answer is about half as long (22 % fewer tokens in total). 13 tasks of the second r6s05 sample failed with API errors
 (the server was under memory pressure from unrelated load) and were regenerated afterwards with the same settings (`--retry-from`).
+
+**With Qwen's full recommended settings**, i.e. the same plus `presence_penalty=1.5` (2 samples per model, `-pp15-s1` and `-pp15-s2`;
+oMLX applies the penalty over the last 20 tokens of each sequence):
+
+| model | pass@1, mean ± population sd | samples | hard (mean) | hit token limit (of 200) | median tokens | total tokens (2 samples) |
+|---|---|---|---|---|---|---|
+| base | 50.5 ± 1.5 | 49, 52 | 9.0 / 46 | 69 | 5 196 | 929 k |
+| **r6s05** | **55.5 ± 4.5** | 60, 51 | 14.5 / 46 | **43** | **2 940** | **730 k** |
+
+Paired on tasks: r6s05 better on 17, base better on 8, tie on 75 (sign test p = 0.11); passed in both samples: 46 vs 43. The first pair of samples looked like a real accuracy gap (+16 / −5 on tasks,
+p = 0.027), the second did not (+7 / −8), so I read the 60 as a lucky draw and the accuracy as unchanged. Two things the penalty did
+show: it does not cure the base's loops (35 % of its answers still hit the limit, vs 37 % without the penalty, same pass rate), and it
+makes the median answer of both models longer (base 4 265 → 5 196, r6s05 2 256 → 2 940 tokens). Before trusting the comparison I
+checked that the penalty takes effect in both oMLX serving paths (the base runs resident and single-stream, r6s05 batched with the
+n-gram table on SSD): greedy outputs of both models diverge at the same positions once the penalty is set, in both paths.
 
 **Thinking mode** (temperature 0.6, top_p 0.95, top_k 20; Qwen recommends temperature 1.0 for thinking, these runs used 0.6;
 32 768 output tokens, same subset, one run per model):
@@ -273,7 +287,7 @@ Tested with mlx 0.32.4, mlx_vlm 0.7.11, numpy 2.5.4, oMLX 0.7.4.dev1, macOS 26.
 - One machine (MacBook Pro, M5 Max, 128 GB), one quantisation, one subset of 100 tasks. Numbers are for *this* checkpoint; the directions were
   measured on it and may or may not transfer to other quantisations of the same weights (untested).
 - Thinking mode: one sampled run per model (32 k budget, temperature 0.6 where Qwen recommends 1.0); no repeated samples yet.
-- Non-thinking sampled runs did not use Qwen's recommended `presence_penalty=1.5`.
+- Non-thinking: 3 sampled runs per model without and 2 with Qwen's recommended `presence_penalty=1.5`; the penalty did not change the picture.
 - No controlled wall-clock comparison (see "A note on wall time"); only token counts are comparable between base and edit.
 - General capability checked on subsets only (300 GSM8K problems, 570 MMLU questions, full HumanEval), greedy and non-thinking; no
   full MMLU, no multilingual or long-context tests.
