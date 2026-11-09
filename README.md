@@ -14,10 +14,11 @@ quarter shorter answers at unchanged accuracy (LiveCodeBench 51 → 53 without t
 
 ## The problem
 
-Qwen3.8-Flash-Next (125 B MoE, 6 B active) in non-thinking mode tends to solve a coding task, then write "Wait, let me reconsider…"
-and start over, sometimes several times, until it hits the token limit. On a 100-task LiveCodeBench subset, **38 of 100 answers hit the
-8 192-token limit** on the base model, and 12 of those 38 tasks are solved by the edited model or by a sampled non-thinking run of the
-base itself (16 counting the base's thinking-mode run), i.e. the spiral blocks answers that are within reach.
+Qwen3.8-Flash-Next (125 B MoE, 6 B active) tends to solve a coding task, then write "Wait, let me reconsider…" and start over,
+sometimes several times, until it hits the token limit. It happens in both modes. On a 100-task LiveCodeBench subset, **38 of 100
+non-thinking answers hit the 8 192-token limit** on the base model, and 12 of those 38 tasks are solved by the edited model or by a
+sampled non-thinking run of the base itself (16 counting the base's thinking-mode run), i.e. the spiral blocks answers that are within
+reach. With thinking on and a 32 768-token limit, 33 of the base's 37 failures are again answers cut at the limit, not wrong answers.
 
 ## The method
 
