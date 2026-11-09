@@ -19,7 +19,7 @@ i co abliteracja orcarouter na tej architekturze (149 tensorów, W' = W − d d�
    5 bitach 1,6%, 6 bitach 0,3%, 8 bitach 0,1%. Eksperci `switch_mlp.down_proj` (49 × [512, 2560, 640]) idą więc do 6 bitów (+10 GB,
    model 118 GB), reszta zostaje w swoich 8 bitach. Zapis "na starą siatkę" jest gorszy (98% zostaje).
 
-## Pomiar kierunku (`tools/flash_find_direction.py --raw --limit 160 --trunc-frac 0.75`, 16 min, 540 tok/s)
+## Pomiar kierunku (`tools/flash_find_direction.py --raw --limit 160 --trunc-frac 0.75`, 16 min, 634 tok/s)
 
 160 odpowiedzi nauczyciela z fazy D (120 uciętych w spirali, 40 skończonych), 3020 pozycji dodatnich (token przed frazą rewizji
 i jej pierwszy token) i 3020 kontrolnych (początki zdań bez rewizji). Wspólny kierunek warstwy = średnia różnic średnich po 4 strumieniach.
@@ -70,6 +70,9 @@ Pełne porównanie (100 odłożonych zadań k=1, LCB 100 bez myślenia) przez oM
 | baza oQ4e WLSRefit | 60 | 28 | 1 416 | 49 | 22/23 · 20/31 · 7/46 | 38 | 3 870 | 123 min |
 | norev-pca6 | 58 | 7 | 669 | **43** | 22/23 · 16/31 · 5/46 | 14 | 939 | 55 min |
 
+(Korekta 2026-11-09: wiersz bazy jest taki, jak go pierwotnie zapisano. Dwa zapytania bazy serwer odrzucił i policzono je jako
+porażki; po dogenerowaniu baza ma 51, 23/23 · 20/31 · 8/46, a pca6 wobec bazy to 3 lepiej / 11 gorzej.)
+
 Per zadanie: odłożone 9 lepiej / 11 gorzej, LCB 5 lepiej / 11 gorzej. **Wynik: edycja rangi 6 przy pełnej skali jest za mocna.** Daje 2× krótsze
 odpowiedzi i 2,2× krótszy czas LCB, ale kosztuje 2 pkt na odłożonych i 6 pkt na LCB (medium i hard). Z uciętych u bazy większość staje się
 pewną, krótką, błędną odpowiedzią: część fraz "Wait" była prawdziwą autokorektą, a podprzestrzeń rangi 6 zabrała ją razem ze spiralą.
@@ -92,4 +95,4 @@ zadaniach. Żadna różnica nie jest istotna. Ranga 3 to już prawie pełne zdj�
 ucięcia 28→15, mediana tokenów −32%, czas −22%. Następny krok: zbudować r6s05 do oMLX i zmierzyć LCB 100 (pełna ranga 6 dała 49→43).
 Modele z przeglądu skasowane (odtworzenie: `flash_ablate.py ... --scale 0.5`, ok. 1 min).
 
-**LCB 100 dla r6s05 (2026-11-07, oMLX, bez myślenia, 8192): 53 vs baza 49** (22/23 · 19/31 · 12/46; +8 / −4; na limicie 39→23; mediana tok 3 863→2 935; 73 min zamiast 123). Zyski to głównie zadania trudne, które baza ucinała. Model w oMLX: `local/Qwen3.8-Flash-Next-oQ4e-WLSRefit-MTP-norev-r6s05`. Wynik na LCB przeczy obawie z odłożonych (66 vs 68): tam różnica była w szumie, tu zysk +4 przy −40% czasu.
+**LCB 100 dla r6s05 (2026-11-07, oMLX, bez myślenia, 8192): 53 vs baza 51 (pierwotnie podane 49)** (22/23 · 19/31 · 12/46; +6 / −4, pierwotnie +8 / −4; na limicie 38→23; mediana tok 3 863→2 935). Korekta 2026-11-09: dwa zapytania bazy serwer odrzucił i policzono je jako porażki, po dogenerowaniu baza ma 51; czasy przebiegów przez oMLX (123 / 55 / 73 min) w tych notatkach nie są czystym porównaniem (różne tryby serwera), porównywać tokeny. Zyski to głównie zadania trudne, które baza ucinała. Model w oMLX: `local/Qwen3.8-Flash-Next-oQ4e-WLSRefit-MTP-norev-r6s05`. Wynik na LCB przeczy obawie z odłożonych (66 vs 68): tam różnica była w szumie, tu zysk +4 przy −40% czasu (po korekcie bazy zysk to +2; czasy przez oMLX nie są porównywalne).

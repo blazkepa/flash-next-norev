@@ -15,7 +15,10 @@ directory for oMLX) → `flash_ab_generate.py` (quick in-process A/B on a handfu
 ## flash_find_direction.py
 
 Purpose: difference-of-means direction of "revision" in Qwen3.8-Flash-Next (`qwen4_exp`, loaded in-process with mlx_vlm).
-Positive positions: the token before a revision phrase ("Wait", "Actually", "Let me reconsider", …) and the phrase's first token.
+Positive positions: the first token of a revision phrase ("Wait", "Actually", "Let me reconsider", …) and one neighbouring token.
+The code aims at the token before the phrase and the phrase's first token, but Qwen's tokenizer glues the leading space to the word
+(" Wait"), so `token_at` lands one token late for 78 % of the phrases: there the two positions are the phrase token and the token after
+it. Control positions are shifted the same way (73 %).
 Control positions: sentence starts without a revision, the same number per answer. For every layer the direction is
 mean(pos) − mean(neg), normalised, with Cohen's d and AUC of the projections.
 
@@ -32,7 +35,7 @@ Flags: `--samples` (jsonl of the model's answers; rows with `id`, `text`, `trunc
 layers, per-stream cosines, seconds). The PCA-6 file was derived from the raw per-stream directions of layers 8–40.
 
 Memory/time: the model view without the n-gram table is 74 GB resident, 8 s to load; `mx.set_cache_limit(2 GB)` is set in the
-script because the mlx buffer pool otherwise grows by tens of GB. Raw run with `--limit 160 --trunc-frac 0.75`: 16 min at 540 tok/s.
+script because the mlx buffer pool otherwise grows by tens of GB. Raw run with `--limit 160 --trunc-frac 0.75`: 16 min at 634 tok/s (593 906 tokens in 936 s).
 
 ## flash_check_direction.py
 
@@ -76,9 +79,8 @@ components in slot 1), `--streams mean|all` (one shared direction, or all per-st
 
 Quantisation: dequantise → project → requantise with fresh scales. At 4 bit the rounding restores ~30 % of the removed component (a
 2 % change of norm is below the grid step); at 6 bit 0.3 %. Expert `down_proj` therefore go to `--expert-bits` (+10 GB), the rest
-keeps its bits (8). Unchanged shards are hard-linked, so the output costs ~10 GB of extra disk. `ablation.json` in the output lists
-every edited tensor with its mean relative change (0.025 for r6s05) and the parameters of the run. Time: ~35 s of compute, the rest is
-I/O. Restart oMLX to see the new model.
+keeps its bits (8). Shards without edited tensors (the 5 n-gram shards, 25 GB) are hard-linked; the other 16 are rewritten, so the output needs ~93 GB of free disk. `ablation.json` in the output lists
+every edited tensor with its mean relative change (0.025 for r6s05) and the parameters of the run. Time: about 40 s in total on an M5 Max, I/O included. Restart oMLX to see the new model.
 
 ## flash_ab_generate.py
 
@@ -97,7 +99,7 @@ functions.
 ## d1_sample.py and d1_find_direction.py (shared helpers)
 
 `d1_sample.py` holds the open-r1 problem loader (`load_problems`: `verifiable-coding-problems` parquet files with stdin/stdout
-tests, filtered to 5–50 tests and to problems that share fewer than 3 twelve-grams with the LCB subset, so the held-out set cannot
+tests, problems with at least 5 tests (at most 50 used per problem), filtered to problems that share fewer than 3 twelve-grams with the LCB subset, so the held-out set cannot
 leak into the benchmark), the prompt (`build_prompt`, same system prompt and format as the LCB runner), and a rejection-sampling driver
 that generates k answers per problem through an OpenAI-compatible server or in-process. `d1_find_direction.py` holds the revision
 regex (`REV`), the sentence-boundary regex (`BOUNDARY`) and `token_at`; it is the original difference-of-means script for a smaller

@@ -28,7 +28,7 @@ only the architecture-specific lessons below are new.
    (49 × [512, 2560, 640]) therefore go to 6 bit (+10 GB, model 118 GB); everything else stays at its 8 bit. Writing back onto the
    old grid is worse (98 % of the component stays).
 
-## Measuring the direction (`tools/flash_find_direction.py --raw --limit 160 --trunc-frac 0.75`, 16 min, 540 tok/s)
+## Measuring the direction (`tools/flash_find_direction.py --raw --limit 160 --trunc-frac 0.75`, 16 min, 634 tok/s)
 
 Data: 160 of the model's own answers to open-r1 coding problems (oQ5e build, non-thinking mode; 120 truncated in a spiral, 40 finished),
 giving 3 020 positive positions (the token before a revision phrase and the phrase's first token) and 3 020 control positions (sentence
@@ -81,6 +81,9 @@ truncated now pass.
 | base oQ4e WLSRefit | 60 | 28 | 1 416 | 49 | 22/23 · 20/31 · 7/46 | 38 | 3 870 | 123 min |
 | norev-pca6 | 58 | 7 | 669 | **43** | 22/23 · 16/31 · 5/46 | 14 | 939 | 55 min |
 
+(Correction 2026-11-09: the base row is as first recorded. Two of its requests had been rejected by the server and counted as failures;
+regenerated, the base is 51 with 23/23 · 20/31 · 8/46, and LCB per task is 3 better / 11 worse for pca6.)
+
 Per task: held-out 9 better / 11 worse, LCB 5 better / 11 worse. **Result: the rank-6 edit at full scale is too strong.** It gives 2×
 shorter answers and 2.2× shorter LCB time, but costs 2 points on the held-out set and 6 points on LCB (medium and hard). Most of the
 answers the base truncated become confident, short, wrong answers: part of the "Wait" phrases were genuine self-correction, and the
@@ -104,9 +107,9 @@ noise of about ±5 points on 100 tasks. No difference is significant. Rank 3 alr
 r6s05:** −2 points (within noise), truncations 28→15, median tokens −32 %, time −22 %. The sweep models were deleted (rebuild:
 `flash_ablate.py ... --scale 0.5`, about 1 min).
 
-For comparison, supervised fine-tuning towards shorter answers on 366 examples hurt (held-out 55).
+For comparison, supervised fine-tuning towards shorter answers on 363 examples hurt (held-out 55).
 
-## LCB 100 for r6s05 (2026-11-07, oMLX, non-thinking, 8 192 tokens): 53 vs base 49
+## LCB 100 for r6s05 (2026-11-07, oMLX, non-thinking, 8 192 tokens): 53 vs base 51 (first reported as 49)
 
 22/23 · 19/31 · 12/46; paired +8 / −4 (+6 / −4 after the base correction); at the token limit 38→23; median tokens 3 863→2 935. (The earlier
 comparison table lists 38 and 3 870 for the base; the per-task JSON in `eval/livecodebench/results/` gives 38 truncated and median 3 863.)
@@ -114,7 +117,7 @@ The gains are mostly hard tasks the base truncated. Model in oMLX: `local/Qwen3.
 The LCB result contradicts the worry from the held-out set (66 vs 68): there the difference was within noise, here it is +4 (later corrected to +2: the base is 51 once its two server-rejected requests are regenerated).
 (Correction 2026-11-09: the oMLX wall times in these notes, 123 / 55 / 73 min, are not a clean comparison. oMLX served the base fully
 resident and mostly one stream at a time, and the edited variants with the n-gram table on SSD as a batch of four. Compare tokens:
-442 k → 373 k total for r6s05. The in-process timings in the sweep table above are one process and one mode, those stand.)
+445 k → 373 k total for r6s05. The in-process timings in the sweep table above are one process and one mode, those stand.)
 
 ## The three traps, in one place
 

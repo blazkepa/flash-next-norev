@@ -16,14 +16,15 @@ quarter shorter answers at unchanged accuracy (LiveCodeBench 51 → 53 without t
 
 Qwen3.8-Flash-Next (125 B MoE, 6 B active) in non-thinking mode tends to solve a coding task, then write "Wait, let me reconsider…"
 and start over, sometimes several times, until it hits the token limit. On a 100-task LiveCodeBench subset, **38 of 100 answers hit the
-8 192-token limit** on the base model, and 16 of those 38 tasks are solved by the edited model or by another run of the base itself,
-i.e. the spiral blocks answers that are within reach.
+8 192-token limit** on the base model, and 12 of those 38 tasks are solved by the edited model or by a sampled non-thinking run of the
+base itself (16 counting the base's thinking-mode run), i.e. the spiral blocks answers that are within reach.
 
 ## The method
 
 1. **Measure a direction.** Run the base model over 160 earlier Flash-Next answers to open-r1 coding problems (non-thinking, generated
    by the oQ5e build of the same model) and record the residual stream at revision phrases ("Wait", "Actually", "Hmm, let me re-check";
-   the token before the phrase and its first token) versus the same number of sentence starts without a revision, 3 020 positions each.
+   the first token of the phrase and one neighbouring token, see `tools/README.md`) versus the same number of sentence starts without a
+   revision, 3 020 positions each.
    Difference of means gives one direction per layer and per residual stream. Flash-Next has **4 hyper-connection residual streams**; the
    directions must be measured in the *raw* streams, before the mixer, or the edit does nothing (trap no. 1).
 2. **Reduce.** The per-stream directions are not parallel (cosine 0.03–0.47 between streams at layer 32), but they lie in a
@@ -61,7 +62,7 @@ revisions almost vanish (4.5 → 0.2 per answer, measured through oMLX) and the 
 that some of those revisions were genuine self-correction is an interpretation, not a measurement.
 
 Noise: on 100 tasks a ±5 difference is within run-to-run noise for sampled decoding and within perturbation noise even for greedy
-(the rank-1 variant moved −6 with no change in truncations). Treat the pass@1 delta as "not worse" and the
+(the rank-1 variant moved −6 while barely changing the behaviour: revisions 4.6 → 4.8 per answer, truncations 28 → 30). Treat the pass@1 delta as "not worse" and the
 token delta (which is large and consistent on both sets) as the real effect.
 
 **Sampled decoding** (temperature 0.7, top_p 0.8, top_k 20; 3 samples per model, same subset, 8 192 tokens; aggregated with
@@ -102,13 +103,13 @@ non-thinking), and the revision loop remains the dominant failure: 33 of the bas
 The MTP (multi-token prediction) draft head is edited like the rest of the model (3 of the 149 tensors), and its acceptance does not
 drop: on identical prompts through oMLX, single stream, the draft acceptance is 89.1 % (base) vs 90.6 % (r6s05), with 3.3 vs 3.1 tokens
 per backbone pass. Warm decode speed is 91–100 tok/s (base) vs 96–107 tok/s (r6s05) on 3 prompts; the first, cold pass of r6s05 was
-74–82 tok/s while its n-gram table was being paged in from SSD (`tools/omlx_bench_tps.py`).
+74–82 tok/s, probably because its n-gram table was still being paged in from SSD (`tools/omlx_bench_tps.py`).
 
 **A note on wall time.** Earlier versions of this README reported wall-clock times (123 → 73 min greedy, 119 → 78 min per sampled run)
 and a "−40 % wall time" headline. The thinking-mode pair (587 → 294 min for 14 % fewer tokens) made it obvious that those timings do not
-isolate the edit. On this 128 GB machine oMLX loads the base fully resident (100.5 GB) and, according to its log, then serves the four
+isolate the edit. On this 128 GB machine oMLX loads the base fully resident (100.5 GiB as its log reports it) and, according to its log, then serves the four
 benchmark streams mostly one at a time through the single-stream MTP path; r6s05 is 10 GB larger, does not fit resident, gets its
-n-gram table memory-mapped from SSD (80 GB resident) and is served as a batch of four. Total throughput was 49–66 tok/s in the base
+n-gram table memory-mapped from SSD (80 GiB resident) and is served as a batch of four. Total throughput was 49–66 tok/s in the base
 runs and 67–86 tok/s in the r6s05 runs. The timings therefore mix the server mode with the model, the two cannot be separated from
 these runs, and the timings are no longer reported. The comparable quantity is the token count: −16 % total tokens greedy, −22 % sampled, −14 % with thinking. The base has not
 been re-run in the SSD mode yet.
@@ -119,7 +120,7 @@ edit helps on LiveCodeBench. Runners, data subsets (with fixed seeds) and per-ta
 
 **Reference point: an expert-pruned variant.** The other way to make this model cheaper is to drop experts. For scale we ran the same
 four benchmarks, same harness and settings, on `sh0wie/Qwen3.8-Flash-Next-REAP-288-MLX-4bit` (288 of 512 experts kept by REAP saliency,
-4-bit, ~68 GB resident vs ~100 GB, no MTP head):
+4-bit, ~69 GiB resident vs ~100 GiB, no MTP head):
 
 | benchmark (greedy, non-thinking) | base oQ4e | r6s05 (this work) | REAP-288 | REAP vs base, paired |
 |---|---|---|---|---|
@@ -199,7 +200,7 @@ used here (generated by the oQ5e build) will be added to the repository.
 python -I eval/livecodebench/make_subset.py          # downloads livecodebench/code_generation_lite, builds the same 100-task subset (sha256 in subset_ids.json)
 python -I eval/livecodebench/run_livecodebench.py --model <oMLX model id> --no-think --max-tokens 8192 --workers 4 --tag <tag>
 python -I eval/livecodebench/run_livecodebench.py ... --temperature 0.7 --top-p 0.8 --top-k 20 --tag <tag>-s1   # sampled runs
-python -I eval/livecodebench/summarize_samples.py <tagA> <tagB>                                                  # mean ± sd, paired sign test
+python -I eval/livecodebench/summarize_samples.py <tagA> <tagB>                                                  # mean ± population sd, paired sign test
 ```
 
 The runner talks to any OpenAI-compatible server (`LLM_BASE_URL`, `LLM_API_KEY`); hidden tests are executed in a subprocess with a
@@ -226,7 +227,7 @@ python -I tools/flash_ablate.py \
 ```
 
 It processes one shard at a time (about 40 s in total on an M5 Max) and hard-links the shards it does not touch. Knobs:
-`--scale` (0.5 measured best; 1.0 over-corrects), `--rank k` (use only the first *k* of the 6 directions; 1 and 3 are weaker),
+`--scale` (0.5 was the best of the variants tried; 1.0 over-corrects), `--rank k` (use only the first *k* of the 6 directions; 1 and 3 are weaker),
 `--expert-bits 4` (keeps the model ~10 GB smaller but about 30 % of the edit is lost to rounding), `--no-embed` (leave the embedding
 table alone). Restart oMLX; the new directory shows up as a model. Compare base and edit with the same prompts before trusting it.
 

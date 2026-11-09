@@ -60,14 +60,14 @@ python3 -I eval/livecodebench/summarize_samples.py <tagA> <tagB>
 `run_livecodebench.py` flags: `--model` (required), `--limit N`, `--workers` (default 4), `--no-think` (sets
 `chat_template_kwargs.enable_thinking=false`), `--tag`, `--max-tokens` (default 2 048), `--http-timeout` (default 600 s; thinking
 mode with a 32 k budget needs ~3 600), `--temperature` (default 0 = greedy), `--top-p` (default 1.0), `--top-k` (default 0 = off),
-`--timeout`, `--mem-mb`. The runner talks to any OpenAI-compatible server through `eval/common/llm.py` (stdlib only).
+`--presence-penalty` (default 0 = not sent), `--retries` (default 3), `--retry-from`, `--timeout`, `--mem-mb`. The runner talks to any OpenAI-compatible server through `eval/common/llm.py` (stdlib only).
 
 Output `results/<tag>.json`: `model`, `no_think`, `max_tokens`, `dataset` (version, subset sha256, window), `n`, `passed`, `pass_at_1`,
 `by_difficulty`, `wall_seconds`, `completion_tokens`, `tok_per_s_per_stream`, and `per_problem` (id, platform, difficulty, passed,
 `failed_test_count`, `tests_run`, `tests_total`, error, tokens, truncated, code). `summarize_samples.py <prefixA> <prefixB>` reads
 `results/<prefix>-s*.json`, averages pass@1 over the samples, and runs a sign test on the tasks where the per-task pass fractions differ.
 
-API errors (connection drops, HTTP 5xx — typically a server under memory pressure) are retried 3 times with back-off and, if they persist, recorded as `error: "api: …"` and counted as failures. `--retry-from results/<tag>.json` re-runs only those tasks and rewrites the file, so a run disturbed by other load on the server can be repaired instead of repeated.
+Request errors (dropped connections, HTTP 4xx/5xx from oMLX's memory guard, malformed responses) are retried 3 times with back-off (retries were added on 2026-11-08; the earlier greedy base run had none, which is how its two rejected requests first ended up as failures) and, if they persist, recorded as `error: "api: …"` and counted as failures. `--retry-from results/<tag>.json` re-runs only those tasks and rewrites the file, so a run disturbed by other load on the server can be repaired instead of repeated.
 
 ## Results in this repository
 
@@ -109,11 +109,11 @@ Thinking mode (temperature 0.6, top_p 0.95, top_k 20, 32 768 tokens, one sampled
 | `flash-oq4e-norev-r6s05-think-32k-t06.json` | oQ4e, norev r6s05 | **69** | 23/23 · 28/31 · 18/46 | 28 | 10 533 | 1.47 M |
 
 Paired: r6s05 +7 / −1 (sign test p = 0.07). The chart in the top-level README is drawn by
-`plot_answer_length.py results/flash-oq4e-nothink-8192.json results/flash-oq4e-norev-r6s05-nothink-8192.json <out.svg>`.
+`plot_answer_length.py results/flash-oq4e-nothink-8192.json results/flash-oq4e-norev-r6s05-nothink-8192.json <out.svg> "base oQ4e" "norev r6s05"`.
 
 ## Noise
 
-On 100 tasks a difference of ±5 is within noise. A rank-1 variant of the edit, which did not change the model's behaviour at all,
+On 100 tasks a difference of ±5 is within noise. A rank-1 variant of the edit, which barely changed the model's behaviour (revisions 4.6 → 4.8 per answer, truncations 28 → 30),
 moved the held-out score by −6 with greedy decoding; sampled decoding adds run-to-run variance on top. Therefore:
 
 - compare paired on tasks (which tasks flipped, and in which direction) and report the sign test, not only the totals;
