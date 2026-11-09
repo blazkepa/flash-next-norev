@@ -112,6 +112,9 @@ For comparison, supervised fine-tuning towards shorter answers on 366 examples h
 comparison table lists 38 and 3 870 for the base; the per-task JSON in `eval/livecodebench/results/` gives 38 truncated and median 3 863.)
 The gains are mostly hard tasks the base truncated. Model in oMLX: `local/Qwen3.8-Flash-Next-oQ4e-WLSRefit-MTP-norev-r6s05`.
 The LCB result contradicts the worry from the held-out set (66 vs 68): there the difference was within noise, here it is +4 at −40 % time.
+(Correction 2026-11-09: the oMLX wall times in these notes, 123 / 55 / 73 min, are not a clean comparison. oMLX served the base fully
+resident and mostly one stream at a time, and the edited variants with the n-gram table on SSD as a batch of four. Compare tokens:
+442 k → 373 k total for r6s05. The in-process timings in the sweep table above are one process and one mode, those stand.)
 
 ## The three traps, in one place
 
