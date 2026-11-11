@@ -173,7 +173,6 @@ were after. Per-task results: `eval/*/results/flash-reap288-*.json`.
 | 4-bit experts after the edit | about 30 % of the removed component comes back (from the lab notes; that variant's report was not kept) | quantisation step is larger than the edit |
 | 6 dirs, scale 1.0 | LCB 43 (−8), held-out 58 vs 60 (both through oMLX) | too strong; revisions almost vanish (4.5 → 0.2 per answer) but more answers are short and wrong |
 | rank 1 / rank 3 | held-out 62 / 63, tokens −8 % / −29 % | rank 3 already shortens, rank 6 at half scale is better |
-| supervised fine-tuning towards short answers (LoRA, 363 examples) | held-out 55 (−13) | the model learns to be short and confidently wrong |
 | fewer active experts for speed (`num_experts_per_tok` 10 → 8 / 6 / 4, no weight change) | single-stream decode 41.7 → 44.8 / 45.7 / 46.8 tok/s (+7 / +10 / +12 %) | experts are ≤ 20 % of per-token time on this hardware; not worth the quality risk, quality not measured (`tools/flash_bench_tps.py`) |
 
 ## Repository layout

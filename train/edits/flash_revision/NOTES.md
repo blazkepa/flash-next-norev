@@ -107,8 +107,6 @@ noise of about ±5 points on 100 tasks. No difference is significant. Rank 3 alr
 r6s05:** −2 points (within noise), truncations 28→15, median tokens −32 %, time −22 %. The sweep models were deleted (rebuild:
 `flash_ablate.py ... --scale 0.5`, about 1 min).
 
-For comparison, supervised fine-tuning towards shorter answers on 363 examples hurt (held-out 55).
-
 ## LCB 100 for r6s05 (2026-11-07, oMLX, non-thinking, 8 192 tokens): 53 vs base 51 (first reported as 49)
 
 22/23 · 19/31 · 12/46; paired +8 / −4 (+6 / −4 after the base correction); at the token limit 38→23; median tokens 3 863→2 935. (The earlier
